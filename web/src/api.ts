@@ -93,3 +93,11 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 export function sendJson<T>(method: string, path: string, body: unknown): Promise<T> {
   return api<T>(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
+
+/** Map credit line: OpenStreetMap always, plus CARTO when its basemap is used. */
+export function tileAttribution(tileUrl: string): string {
+  const osm = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  return tileUrl.includes("cartocdn.com")
+    ? `${osm} &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>`
+    : osm;
+}

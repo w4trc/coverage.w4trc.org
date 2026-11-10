@@ -8,7 +8,7 @@ import "./admin.css";
 
 import L from "leaflet";
 import { ANTENNA_LABELS, COMMENT_MAX, CONTEXT_LABELS, QUALITY, RADIO_LABELS } from "../../src/shared/constants";
-import { api, sendJson, type AppConfig, type Repeater } from "./api";
+import { api, tileAttribution, sendJson, type AppConfig, type Repeater } from "./api";
 import { $, formatDateTime, h } from "./dom";
 
 type Status = "pending" | "approved" | "rejected";
@@ -57,7 +57,7 @@ async function start() {
   map.attributionControl.setPrefix(false);
   L.tileLayer(config.tile_url, {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: tileAttribution(config.tile_url),
   }).addTo(map);
   const layer = L.layerGroup().addTo(map);
   const firstRep = reps.repeaters[0];

@@ -102,7 +102,7 @@ It needs the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_I
 - **Logs:** structured JSON in Workers Logs.
 - **Settings** (`wrangler.jsonc` vars): `SITE_ORIGINS` (sites allowed to embed the map and read
   the API), `REPORT_MAX_DISTANCE_MI` (default 100), `REPORT_RATE_LIMIT_PER_HOUR` (default 10),
-  `TILE_URL` (basemap).
+  `TILE_URL` (basemap; defaults to CARTO Positron, a light map with few labels).
 
 ## Adding another repeater
 

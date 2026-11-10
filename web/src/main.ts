@@ -16,7 +16,7 @@ import {
   h3ResForZoom,
   type QualityKey,
 } from "../../src/shared/constants";
-import { api, type AppConfig, type CellDetail, type Hex, type PublicReport, type Repeater } from "./api";
+import { api, tileAttribution, type AppConfig, type CellDetail, type Hex, type PublicReport, type Repeater } from "./api";
 import { $, formatDate, h } from "./dom";
 import { initReportFlow } from "./report";
 
@@ -64,7 +64,7 @@ async function start() {
   map.attributionControl.setPrefix(false);
   L.tileLayer(config.tile_url, {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    attribution: tileAttribution(config.tile_url),
   }).addTo(map);
   L.control.scale({ imperial: true, metric: false }).addTo(map);
 
