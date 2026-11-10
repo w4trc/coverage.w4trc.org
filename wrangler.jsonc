@@ -55,7 +55,7 @@
     // Cloudflare Access. Both must be set for /admin to work in production.
     // ACCESS_TEAM_DOMAIN looks like "yourteam.cloudflareaccess.com".
     "ACCESS_TEAM_DOMAIN": "w4trc.cloudflareaccess.com",
-    "ACCESS_AUD": "8229b197-cf4d-4691-af8f-81a8c711085f"
+    "ACCESS_AUD": "14cec687055e2656fa1113fe80e9a2a4337a0400a128113bb276dcc197882b2a"
   },
 
   "env": {
