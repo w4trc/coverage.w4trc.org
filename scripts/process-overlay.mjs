@@ -2,6 +2,7 @@
 // Turns a Radio Mobile coverage export into the overlay the map displays.
 //
 //   node scripts/process-overlay.mjs --input coverage.kmz --out scripts/out/w4trc-vhf
+//   node scripts/process-overlay.mjs --input export/coverage.kml --out scripts/out/w4trc-vhf   (folder export)
 //   node scripts/process-overlay.mjs --input coverage.png --bounds "S,W,N,E" --out scripts/out/w4trc-vhf
 //
 // What it does:
@@ -20,7 +21,7 @@
 //   --bounds-file F  JSON [[south, west],[north, east]] instead of --bounds
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { basename, extname, join } from "node:path";
+import { basename, dirname, extname, join } from "node:path";
 import { parseArgs } from "node:util";
 import sharp from "sharp";
 import { unzipSync, strFromU8 } from "fflate";
@@ -45,7 +46,7 @@ const { values: opt } = parseArgs({
 });
 
 if (opt.help || !opt.input) {
-  console.log("Usage: node scripts/process-overlay.mjs --input <file.kmz|file.png> [--bounds S,W,N,E] --out <dir>");
+  console.log("Usage: node scripts/process-overlay.mjs --input <file.kmz|file.kml|file.png> [--bounds S,W,N,E] --out <dir>");
   process.exit(opt.help ? 0 : 1);
 }
 
@@ -68,35 +69,52 @@ function checkBounds(b) {
   return b;
 }
 
+function parseKml(kml) {
+  const tag = (name) => {
+    const m = new RegExp(`<${name}>\\s*([-0-9.eE+]+)\\s*</${name}>`).exec(kml);
+    return m ? Number(m[1]) : NaN;
+  };
+  const box = [
+    [tag("south"), tag("west")],
+    [tag("north"), tag("east")],
+  ];
+  if (/<rotation>\s*[-0-9.]*[1-9]/.test(kml)) console.warn("Warning: the KML overlay is rotated; rotation is ignored.");
+  const href = /<GroundOverlay>[\s\S]*?<href>\s*([^<]+?)\s*<\/href>/.exec(kml)?.[1];
+  return { bounds: box.flat().every(Number.isFinite) ? box : null, href };
+}
+
+function warnIfJpeg(name) {
+  if (/\.jpe?g$/i.test(name)) console.warn("Warning: JPEG overlays have fuzzy colours. Export as PNG if you can.");
+}
+
 async function loadInput() {
   const raw = await readFile(opt.input);
   let image = raw;
   let bounds = null;
 
-  if (extname(opt.input).toLowerCase() === ".kmz") {
+  const ext = extname(opt.input).toLowerCase();
+  if (ext === ".kmz") {
     const files = unzipSync(new Uint8Array(raw));
     const kmlName = Object.keys(files).find((n) => n.toLowerCase().endsWith(".kml"));
     if (!kmlName) fail("No .kml file inside the KMZ.");
-    const kml = strFromU8(files[kmlName]);
-    const tag = (name) => {
-      const m = new RegExp(`<${name}>\\s*([-0-9.eE+]+)\\s*</${name}>`).exec(kml);
-      return m ? Number(m[1]) : NaN;
-    };
-    const box = [
-      [tag("south"), tag("west")],
-      [tag("north"), tag("east")],
-    ];
-    if (box.flat().every(Number.isFinite)) bounds = box;
-    if (/<rotation>\s*[-0-9.]*[1-9]/.test(kml)) console.warn("Warning: the KML overlay is rotated; rotation is ignored.");
-
-    const href = /<GroundOverlay>[\s\S]*?<href>\s*([^<]+?)\s*<\/href>/.exec(kml)?.[1];
+    const kml = parseKml(strFromU8(files[kmlName]));
+    bounds = kml.bounds;
     const imgName =
-      (href && Object.keys(files).find((n) => n === href || n.endsWith(`/${href}`))) ??
+      (kml.href && Object.keys(files).find((n) => n === kml.href || n.endsWith(`/${kml.href}`))) ??
       Object.keys(files).find((n) => /\.(png|gif|jpe?g)$/i.test(n));
     if (!imgName) fail("No overlay image inside the KMZ.");
-    if (/\.jpe?g$/i.test(imgName)) console.warn("Warning: JPEG overlays have fuzzy colours. Export as PNG if you can.");
+    warnIfJpeg(imgName);
     image = Buffer.from(files[imgName]);
     console.log(`KMZ: image ${imgName}${bounds ? ", bounds read from KML" : ""}`);
+  } else if (ext === ".kml") {
+    // Radio Mobile's folder export: a .kml next to the image it names.
+    const kml = parseKml(raw.toString("utf8"));
+    if (!kml.href) fail("The KML does not name an overlay image.");
+    bounds = kml.bounds;
+    const imgPath = join(dirname(opt.input), kml.href);
+    warnIfJpeg(imgPath);
+    image = await readFile(imgPath).catch(() => fail(`Cannot read ${imgPath} (named by the KML).`));
+    console.log(`KML: image ${kml.href}${bounds ? ", bounds read from KML" : ""}`);
   }
 
   if (opt.bounds) {
@@ -136,7 +154,8 @@ const strays = new Map();
 for (let i = 0, p = 0; i < classes.length; i++, p += 4) {
   const r = src[p], g = src[p + 1], b = src[p + 2], a = src[p + 3];
   let cls = 0;
-  if (a >= 128) {
+  // Radio Mobile writes its plot half-transparent (alpha 127), so any visible pixel counts.
+  if (a > 0) {
     let best = Infinity;
     for (let k = 0; k < 3; k++) {
       const c = sourceColors[k];

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Folder><name>Coverage of W4TRC 146.970 MHz</name>
+<GroundOverlay><name>Coverage</name>
+<description>146.970 MHz | 
+99.76 W ERPI | 
+164.51 dB System Gain</description>
+<color>88ffffff</color><Icon><href>RM6FE92304E188_0.png</href>
+<viewBoundScale>0.75</viewBoundScale></Icon><LatLonBox>
+<north> 37.42609</north>
+<south> 35.62744</south>
+<east>-81.46865</east>
+<west>-83.70695</west>
+</LatLonBox></GroundOverlay>
+<Placemark><name>W4TRC</name>
+<Point><coordinates>-82.58779754, 36.52676207,0
+</coordinates></Point></Placemark></Folder></kml>
