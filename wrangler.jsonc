@@ -1,0 +1,87 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "coverage-w4trc",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-11-10",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The Vite build of web/ lands in dist/. The Worker runs first on every
+  // request so it can add the CSP / frame-ancestors headers and guard /admin.
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+
+  // Create with: npx wrangler d1 create coverage   (then paste the id here)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "coverage",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Create with: npx wrangler r2 bucket create coverage-assets
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "coverage-assets" }],
+
+  // Daily D1 -> R2 backup (07:17 UTC).
+  "triggers": { "crons": ["17 7 * * *"] },
+
+  "routes": [{ "pattern": "coverage.w4trc.org", "custom_domain": true }],
+
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+
+  // Non-secret settings. Secrets (TURNSTILE_SECRET_KEY, IP_HASH_SECRET,
+  // SENTRY_DSN, NOTIFY_WEBHOOK_URL) are set with `wrangler secret put`.
+  "vars": {
+    "ENVIRONMENT": "production",
+    "APP_VERSION": "0.1.0",
+    // Sites allowed to iframe the app and call the public GET API.
+    "SITE_ORIGINS": "https://w4trc.org https://www.w4trc.org",
+    // Turnstile site key (public). This is the Cloudflare always-pass TEST key;
+    // replace it with the real widget site key before launch.
+    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+    "TILE_URL": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "REPORT_MAX_DISTANCE_MI": "100",
+    "REPORT_RATE_LIMIT_PER_HOUR": "10",
+    // Cloudflare Access. Both must be set for /admin to work in production.
+    // ACCESS_TEAM_DOMAIN looks like "yourteam.cloudflareaccess.com".
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": ""
+  },
+
+  "env": {
+    "staging": {
+      "name": "coverage-w4trc-staging",
+      "routes": [{ "pattern": "staging.coverage.w4trc.org", "custom_domain": true }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "coverage-staging",
+          "database_id": "00000000-0000-0000-0000-000000000001",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "coverage-assets-staging" }],
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "APP_VERSION": "0.1.0",
+        "SITE_ORIGINS": "https://w4trc.org https://www.w4trc.org",
+        "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+        "TILE_URL": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "REPORT_MAX_DISTANCE_MI": "100",
+        "REPORT_RATE_LIMIT_PER_HOUR": "10",
+        "ACCESS_TEAM_DOMAIN": "",
+        "ACCESS_AUD": ""
+      }
+    }
+  }
+}

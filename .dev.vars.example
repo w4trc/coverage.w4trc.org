@@ -1,0 +1,16 @@
+# Copy to .dev.vars for local development. In production set these with
+# `wrangler secret put NAME`. Leave optional ones empty to disable the feature.
+
+# The Cloudflare always-pass Turnstile TEST secret. Use the real one in production.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Any long random string. Used to hash IPs; raw IPs are never stored.
+IP_HASH_SECRET=change-me-to-a-long-random-string
+# Optional. Sentry is fully disabled when empty.
+SENTRY_DSN=
+# Optional. Discord-compatible webhook pinged when a report is pending.
+NOTIFY_WEBHOOK_URL=
+# Local only. ENVIRONMENT=development turns on the two dev conveniences: DEV_ADMIN_EMAIL
+# stands in for Cloudflare Access, and localhost may iframe the app. Never set these as
+# secrets on a deployed Worker.
+ENVIRONMENT=development
+DEV_ADMIN_EMAIL=dev@localhost

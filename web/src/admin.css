@@ -1,0 +1,156 @@
+.admin {
+  --map-h: clamp(360px, 70vh, 720px);
+}
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.admin-head .btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.admin .layout {
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 30rem);
+}
+.admin .map-wrap {
+  position: sticky;
+  top: 0.75rem;
+}
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+.tab {
+  font: 500 0.95rem/1 var(--font-body);
+  padding: 0.55rem 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+.bulk {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+}
+.report-list {
+  display: grid;
+  gap: 0.6rem;
+}
+.report {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.7rem;
+  padding: 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--none);
+  border-radius: var(--radius);
+}
+.report.q3 {
+  border-left-color: var(--strong);
+}
+.report.q2 {
+  border-left-color: var(--moderate);
+}
+.report.q1 {
+  border-left-color: var(--fringe);
+}
+.report.focused {
+  outline: 2px solid var(--text-strong);
+}
+.report input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  accent-color: var(--primary);
+}
+.report-body {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.report-title {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.report-comment {
+  overflow-wrap: anywhere;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--border);
+}
+.report textarea {
+  font-size: 0.92rem;
+}
+.sender {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+.admin-extra {
+  margin-top: 1rem;
+  display: block;
+}
+.admin-extra summary {
+  cursor: pointer;
+}
+.admin-extra summary h2 {
+  display: inline;
+}
+.overlay-form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+  max-width: 34rem;
+}
+.overlay-form select,
+.overlay-form input[type="file"] {
+  font: inherit;
+  color: var(--text-strong);
+}
+.log {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+.marker-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  display: grid;
+  place-items: center;
+  font: 700 10px/1 var(--font-body);
+  color: #fff;
+}
+.marker-dot.q2 {
+  color: #111;
+}
+@media (max-width: 900px) {
+  .admin .layout {
+    grid-template-columns: 1fr;
+  }
+  .admin .map-wrap {
+    position: static;
+  }
+  .admin {
+    --map-h: 300px;
+  }
+}

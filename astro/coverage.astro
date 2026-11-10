@@ -1,0 +1,52 @@
+---
+// Copy this file into the club website repo as src/pages/coverage.astro
+// and swap in the site's own layout component. Nothing else is needed there:
+// the map itself lives in the coverage Worker.
+//
+// import Base from "@/layouts/Base.astro";
+
+const APP = "https://coverage.w4trc.org";
+---
+
+<!-- <Base title="Repeater Coverage Map"> -->
+<section class="section">
+  <div class="container">
+    <h1>Repeater Coverage Map</h1>
+    <p>
+      See where you can expect to reach the W4TRC repeater. The shaded area is a computer prediction, and the hexagons
+      are signal reports from real people. If you have been somewhere on the map, add a report of your own.
+    </p>
+    <p><a href={APP} target="_blank" rel="noopener">Open the map full screen</a> (best on a phone)</p>
+
+    <iframe
+      id="coverage-frame"
+      src={`${APP}/?embed=1`}
+      title="W4TRC repeater coverage map"
+      allow="geolocation"
+      loading="lazy"
+      style="width:100%; height:85vh; min-height:640px; border:0;"></iframe>
+  </div>
+</section>
+<!-- </Base> -->
+
+<script is:inline define:vars={{ APP }}>
+  // The map reports its content height so the iframe fits without a second scrollbar.
+  // If the message never arrives, the fixed height in the style attribute stays in effect.
+  const frame = document.getElementById("coverage-frame");
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== APP || !event.data || event.data.type !== "coverage:height") return;
+    const height = Number(event.data.height);
+    if (height > 300 && height < 6000) {
+      frame.style.minHeight = "0";
+      frame.style.height = height + "px";
+    }
+  });
+
+  // Match the site's light/dark toggle (the site puts a "dark" class on <html>).
+  if (document.documentElement.classList.contains("dark")) {
+    frame.src = APP + "/?embed=1&theme=dark";
+  } else {
+    frame.src = APP + "/?embed=1&theme=light";
+  }
+</script>

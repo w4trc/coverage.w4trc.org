@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coverage Admin | W4TRC</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="data:," />
+    <meta name="color-scheme" content="light dark" />
+    <script type="module" src="/src/admin.ts"></script>
+  </head>
+  <body class="admin">
+    <div class="app">
+      <header class="page-head admin-head">
+        <div>
+          <h1>Coverage reports</h1>
+          <p class="muted" id="who">&nbsp;</p>
+        </div>
+        <a class="btn btn-outline btn-sm" href="/">View map</a>
+      </header>
+
+      <div class="tabs" role="tablist" id="tabs"></div>
+
+      <div class="layout">
+        <div class="map-wrap"><div id="map" role="application" aria-label="Report locations"></div></div>
+
+        <section class="panel">
+          <div class="bulk card">
+            <label class="switch"><input type="checkbox" id="select-all" /> <span id="selected-count">Select all</span></label>
+            <div class="row">
+              <button class="btn btn-primary btn-sm" id="bulk-approve" type="button" disabled>Approve</button>
+              <button class="btn btn-outline btn-sm" id="bulk-reject" type="button" disabled>Reject</button>
+              <button class="btn btn-danger btn-sm" id="bulk-delete" type="button" disabled>Delete</button>
+            </div>
+          </div>
+          <p class="error" id="admin-error" role="alert" hidden></p>
+          <div id="list" class="report-list" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <details class="card admin-extra">
+        <summary><h2>Prediction overlay</h2></summary>
+        <form id="overlay-form" class="overlay-form">
+          <p class="muted small">
+            Upload the <code>overlay.png</code> and <code>bounds.json</code> written by
+            <code>npm run overlay:process</code>. The map switches to the new image right away.
+          </p>
+          <label class="field"><span class="field-label">Repeater</span><select id="ov-repeater" required></select></label>
+          <label class="field"><span class="field-label">overlay.png</span><input type="file" id="ov-file" accept="image/png,image/webp" required /></label>
+          <label class="field"><span class="field-label">bounds.json</span><input type="file" id="ov-bounds" accept="application/json,.json" required /></label>
+          <label class="field">
+            <span class="field-label">Model notes shown on the map <span class="muted">(optional)</span></span>
+            <textarea id="ov-notes" rows="2" maxlength="500" placeholder="Longley-Rice, handheld at 5 ft, 50 W, omni at 50 ft"></textarea>
+          </label>
+          <div class="row">
+            <button class="btn btn-primary btn-sm" type="submit">Upload overlay</button>
+            <span id="ov-status" role="status"></span>
+          </div>
+        </form>
+      </details>
+
+      <details class="card admin-extra" id="log-details">
+        <summary><h2>Recent admin activity</h2></summary>
+        <div class="log" id="log"></div>
+      </details>
+    </div>
+  </body>
+</html>

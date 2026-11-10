@@ -1,0 +1,46 @@
+{
+  "name": "coverage-w4trc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build && wrangler dev",
+    "dev:web": "vite build --watch",
+    "deploy": "vite build && wrangler deploy",
+    "deploy:staging": "vite build && wrangler deploy --env staging",
+    "types": "wrangler types --strict-vars=false --env-file .dev.vars.example",
+    "typecheck": "tsc -p tsconfig.worker.json --noEmit && tsc -p tsconfig.web.json --noEmit",
+    "test": "vitest run",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:seed:local": "wrangler d1 execute DB --local --file seeds/w4trc-vhf.sql",
+    "overlay:sample": "node scripts/make-sample-overlay.mjs && node scripts/process-overlay.mjs --input scripts/out/sample-radio-mobile.png --bounds-file scripts/out/sample-radio-mobile.bounds.json --out scripts/out/sample",
+    "overlay:process": "node scripts/process-overlay.mjs",
+    "overlay:publish": "node scripts/publish-overlay.mjs",
+    "setup:local": "npm run db:migrate:local && npm run db:seed:local && npm run overlay:sample && node scripts/publish-overlay.mjs --repeater w4trc-vhf --dir scripts/out/sample --sample --local"
+  },
+  "dependencies": {
+    "@fontsource/heebo": "^5.3.0",
+    "@fontsource/signika": "^5.3.0",
+    "@sentry/browser": "^11.12.0",
+    "h3-js": "^4.5.0",
+    "hono": "^4.13.17",
+    "jose": "^6.2.17",
+    "leaflet": "^1.9.4",
+    "toucan-js": "^4.1.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^26.6.6",
+    "fflate": "^0.8.3",
+    "sharp": "^0.35.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.160.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261110.1": true
+  }
+}

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Repeater Coverage Map | W4TRC</title>
+    <meta name="description" content="Where you can expect to reach the W4TRC repeater: a predicted coverage map plus signal reports from real users." />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121212'/%3E%3Cpath d='M16 26V13m-6 13 6-13 6 13M9 9a9 9 0 0 1 14 0M12 12a5 5 0 0 1 8 0' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="page-head">
+        <h1>Repeater Coverage Map</h1>
+        <p class="intro">
+          See where you can expect to reach the repeater. The shaded area is a computer prediction; the hexagons are
+          signal reports from real people. Been somewhere on the map? Add your own report in a few taps.
+        </p>
+      </header>
+
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <span class="stat-label">Repeater output</span>
+          <span class="stat-value" id="stat-freq">&ndash;</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Approved reports</span>
+          <span class="stat-value" id="stat-reports">&ndash;</span>
+        </div>
+        <label class="stat stat-select" id="repeater-picker" hidden>
+          <span class="stat-label">Repeater</span>
+          <select id="repeater-select"></select>
+        </label>
+      </div>
+
+      <div class="layout">
+        <div class="map-wrap">
+          <div id="map" role="application" aria-label="Coverage map"></div>
+          <p class="map-hint" id="map-hint" hidden>Tap the map to place your pin</p>
+          <button class="btn btn-primary map-fab" id="fab-report" type="button">Add a report</button>
+        </div>
+
+        <aside class="panel" id="panel" aria-label="Map details">
+          <!-- Main view -->
+          <div id="view-main">
+            <section class="card">
+              <div class="card-head">
+                <h2>Predicted signal</h2>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-overlay" checked />
+                  <span>Show</span>
+                </label>
+              </div>
+              <p class="muted" id="overlay-status">Computer model of coverage for a handheld radio outdoors.</p>
+              <p class="notice" id="overlay-sample" hidden>
+                Placeholder image. The real prediction has not been published yet, so do not rely on the shading.
+              </p>
+              <ul class="legend" id="legend-predicted">
+                <li><span class="swatch sw-strong"></span><b>Strong</b><span>Clear on a handheld outdoors</span></li>
+                <li><span class="swatch sw-moderate"></span><b>Moderate</b><span>Usable, with some noise</span></li>
+                <li><span class="swatch sw-fringe"></span><b>Fringe</b><span>Spotty on a handheld</span></li>
+              </ul>
+              <label class="slider" id="opacity-row">
+                <span>Opacity</span>
+                <input type="range" id="overlay-opacity" min="20" max="100" value="55" />
+              </label>
+              <p class="muted small" id="overlay-meta"></p>
+              <p class="muted small">Tap anywhere on the shading to read the predicted level in words.</p>
+            </section>
+
+            <section class="card">
+              <div class="card-head">
+                <h2>Measured by reports</h2>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-hexes" checked />
+                  <span>Show</span>
+                </label>
+              </div>
+              <p class="muted">
+                Each hexagon averages the reports sent from inside it. Pale, dashed hexagons have only one or two
+                reports. Tap one for details.
+              </p>
+              <ul class="legend">
+                <li><span class="swatch hex sw-strong">S</span><b>Strong</b><span>Clear audio</span></li>
+                <li><span class="swatch hex sw-moderate">M</span><b>Moderate</b><span>Some noise</span></li>
+                <li><span class="swatch hex sw-fringe">F</span><b>Fringe</b><span>In and out</span></li>
+                <li><span class="swatch hex sw-none">N</span><b>No signal</b><span>Could not reach it</span></li>
+              </ul>
+              <p class="muted small" id="hex-empty" hidden>No approved reports yet. Yours could be the first.</p>
+            </section>
+
+            <button class="btn btn-primary btn-block" id="btn-report" type="button">Add a report</button>
+
+            <section class="card" id="repeater-card" hidden>
+              <h2 id="rc-title">Repeater</h2>
+              <dl class="facts" id="rc-facts"></dl>
+            </section>
+          </div>
+
+          <!-- Report form -->
+          <form id="view-report" class="card" hidden novalidate>
+            <div class="card-head">
+              <h2>Add a report</h2>
+              <button class="btn-link" type="button" id="report-cancel">Cancel</button>
+            </div>
+
+            <fieldset>
+              <legend>1. Where are you?</legend>
+              <p class="loc-status" id="loc-status" role="status">Finding your location&hellip;</p>
+              <div class="row">
+                <button class="btn btn-outline" type="button" id="loc-gps">Use my location</button>
+                <span class="muted small">or tap the map to place the pin</span>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>2. How well do you hear the repeater?</legend>
+              <div class="choices" id="quality-choices"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>3. Your setup</legend>
+              <p class="field-label" id="lbl-radio">Radio</p>
+              <div class="chips" id="radio-chips" role="radiogroup" aria-labelledby="lbl-radio"></div>
+              <p class="field-label" id="lbl-antenna">Antenna</p>
+              <div class="chips" id="antenna-chips" role="radiogroup" aria-labelledby="lbl-antenna"></div>
+              <p class="field-label" id="lbl-context">You are</p>
+              <div class="chips" id="context-chips" role="radiogroup" aria-labelledby="lbl-context"></div>
+            </fieldset>
+
+            <label class="field">
+              <span class="field-label">Comment <span class="muted">(optional)</span></span>
+              <textarea id="report-comment" rows="2" maxlength="280" placeholder="Anything worth knowing about this spot"></textarea>
+            </label>
+
+            <div id="turnstile-box" class="turnstile-box"></div>
+            <p class="error" id="report-error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-block" type="submit" id="report-submit" disabled>Send report</button>
+            <p class="muted small">
+              Your location is rounded to about 36 feet before it is saved. Reports appear after a club volunteer
+              reviews them.
+            </p>
+          </form>
+
+          <!-- Confirmation -->
+          <div id="view-thanks" class="card" hidden>
+            <h2>Thanks!</h2>
+            <p>Your report will appear after review.</p>
+            <div class="row">
+              <button class="btn btn-primary" type="button" id="thanks-done">Back to the map</button>
+              <button class="btn btn-outline" type="button" id="thanks-again">Add another</button>
+            </div>
+          </div>
+
+          <!-- Hexagon detail -->
+          <div id="view-cell" class="card" hidden>
+            <div class="card-head">
+              <h2>Reports in this area</h2>
+              <button class="btn-link" type="button" id="cell-close">Close</button>
+            </div>
+            <div id="cell-body"></div>
+          </div>
+        </aside>
+      </div>
+
+      <p class="foot muted small">
+        <a id="fullscreen-link" href="/" target="_blank" rel="noopener" hidden>Open full screen</a>
+        <span id="foot-error" role="alert"></span>
+      </p>
+    </div>
+  </body>
+</html>
