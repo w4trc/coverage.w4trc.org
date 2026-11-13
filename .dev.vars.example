@@ -9,8 +9,6 @@ IP_HASH_SECRET=change-me-to-a-long-random-string
 SENTRY_DSN=
 # Optional. Discord-compatible webhook pinged when a report is pending.
 NOTIFY_WEBHOOK_URL=
-# Optional. Resend API key for report alert emails (see NOTIFY_EMAIL_* vars).
-RESEND_API_KEY=
 # Local only. ENVIRONMENT=development turns on the two dev conveniences: DEV_ADMIN_EMAIL
 # stands in for Cloudflare Access, and localhost may iframe the app. Never set these as
 # secrets on a deployed Worker.

@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import type { z } from "zod";
 import { REPORTS_MIN_ZOOM } from "../../shared/constants";
 import { cachedHexes, cellsFor, inBbox, isH3Res, resolutionOf } from "../lib/hexes";
 import { getActiveRepeater, publicRepeater, type RepeaterRow } from "../lib/repeaters";
@@ -223,51 +222,9 @@ publicApi.post("/repeaters/:id/reports", async (c) => {
 
   log("info", "report submitted", { report_id: id, repeater_id: repeater.id, quality: input.quality });
   if (c.env.NOTIFY_WEBHOOK_URL) c.executionCtx.waitUntil(notifyPending(c.env, repeater, origin));
-  if (c.env.RESEND_API_KEY && c.env.NOTIFY_EMAIL_FROM && c.env.NOTIFY_EMAIL_TO) {
-    c.executionCtx.waitUntil(emailPending(c.env, repeater, { ...input, id, lat, lon }, origin));
-  }
 
   return c.json({ id, status: "pending", message: "Thanks. Your report will appear after review." }, 201);
 });
-
-type SubmittedReport = Omit<z.output<typeof ReportInput>, "turnstile_token"> & { id: string };
-
-const QUALITY_LABELS = ["No signal", "Poor", "Fair", "Good"];
-
-/** Email alert through Resend. Errors are logged, never surfaced to the reporter. */
-async function emailPending(env: Env, repeater: RepeaterRow, report: SubmittedReport, origin: string): Promise<void> {
-  try {
-    const freq = repeater.output_freq_mhz.toFixed(3);
-    const text = [
-      `A new coverage report is waiting for review.`,
-      ``,
-      `Repeater:  ${repeater.name} (${repeater.callsign} ${freq})`,
-      `Quality:   ${QUALITY_LABELS[report.quality] ?? report.quality} (${report.quality}/3)`,
-      `Location:  ${report.lat}, ${report.lon}  https://www.openstreetmap.org/?mlat=${report.lat}&mlon=${report.lon}#map=13/${report.lat}/${report.lon}`,
-      `Radio:     ${report.radio_type}`,
-      `Antenna:   ${report.antenna_type}`,
-      `Context:   ${report.location_context}`,
-      `Callsign:  ${report.callsign ?? "(none)"}`,
-      `Comment:   ${report.comment ?? "(none)"}`,
-      `Report ID: ${report.id}`,
-      ``,
-      `Review: ${origin}/admin/`,
-    ].join("\n");
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: env.NOTIFY_EMAIL_FROM,
-        to: env.NOTIFY_EMAIL_TO.split(/[\s,]+/).filter(Boolean),
-        subject: `New coverage report: ${repeater.callsign} ${freq}${report.callsign ? ` from ${report.callsign}` : ""}`,
-        text,
-      }),
-    });
-    if (!res.ok) log("warn", "notify email returned an error", { status: res.status, body: (await res.text()).slice(0, 500) });
-  } catch (err) {
-    log("warn", "notify email failed", { error: err instanceof Error ? err.message : String(err) });
-  }
-}
 
 /** Discord-compatible webhook ({content}). Errors are logged, never surfaced to the reporter. */
 async function notifyPending(env: Env, repeater: RepeaterRow, origin: string): Promise<void> {

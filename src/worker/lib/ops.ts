@@ -12,12 +12,21 @@ async function check(fn: () => Promise<void>): Promise<"ok" | "fail"> {
   }
 }
 
-/** GET /health: 200 when D1 and R2 both answer, 503 otherwise. Never cached. */
+/**
+ * GET /health: 200 when D1 and R2 both answer, 503 otherwise. Never cached.
+ * Also reports the review queue (`pending` count and the oldest pending
+ * submission time) so an uptime monitor can alert on it. Pending reports
+ * never change the status code.
+ */
 export async function health(env: Env): Promise<Response> {
+  let pending: { count: number; oldest: string | null } | null = null;
   const [d1, r2] = await Promise.all([
     check(async () => {
-      const row = await env.DB.prepare("SELECT 1 AS ok").first<{ ok: number }>();
-      if (row?.ok !== 1) throw new Error("unexpected D1 result");
+      const row = await env.DB.prepare(
+        "SELECT COUNT(*) AS n, MIN(submitted_at) AS oldest FROM reports WHERE status = 'pending'",
+      ).first<{ n: number; oldest: string | null }>();
+      if (typeof row?.n !== "number") throw new Error("unexpected D1 result");
+      pending = { count: row.n, oldest: row.oldest };
     }),
     check(async () => {
       // HEAD a known object; create it the first time so a new bucket passes.
@@ -26,7 +35,13 @@ export async function health(env: Env): Promise<Response> {
   ]);
   const ok = d1 === "ok" && r2 === "ok";
   return Response.json(
-    { status: ok ? "ok" : "degraded", version: env.APP_VERSION, time: new Date().toISOString(), checks: { d1, r2 } },
+    {
+      status: ok ? "ok" : "degraded",
+      version: env.APP_VERSION,
+      time: new Date().toISOString(),
+      checks: { d1, r2 },
+      pending,
+    },
     { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } },
   );
 }

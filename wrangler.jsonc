@@ -40,7 +40,7 @@
   },
 
   // Non-secret settings. Secrets (TURNSTILE_SECRET_KEY, IP_HASH_SECRET,
-  // SENTRY_DSN, NOTIFY_WEBHOOK_URL, RESEND_API_KEY) are set with `wrangler secret put`.
+  // SENTRY_DSN, NOTIFY_WEBHOOK_URL) are set with `wrangler secret put`.
   "vars": {
     "ENVIRONMENT": "production",
     "APP_VERSION": "0.1.0",
@@ -55,10 +55,6 @@
     // Cloudflare Access. Both must be set for /admin to work in production.
     // ACCESS_TEAM_DOMAIN looks like "yourteam.cloudflareaccess.com".
     "ACCESS_TEAM_DOMAIN": "w4trc.cloudflareaccess.com",
-    // Report alert emails, sent through Resend (needs the RESEND_API_KEY secret).
-    // NOTIFY_EMAIL_TO takes a comma- or space-separated list.
-    "NOTIFY_EMAIL_FROM": "W4TRC Coverage Map <coverage@w4trc.org>",
-    "NOTIFY_EMAIL_TO": "n4jhc@w4trc.org",
     "ACCESS_AUD": "14cec687055e2656fa1113fe80e9a2a4337a0400a128113bb276dcc197882b2a"
   },
 
@@ -84,10 +80,7 @@
         "REPORT_MAX_DISTANCE_MI": "100",
         "REPORT_RATE_LIMIT_PER_HOUR": "10",
         "ACCESS_TEAM_DOMAIN": "",
-        "ACCESS_AUD": "",
-        // Empty: staging sends no alert emails.
-        "NOTIFY_EMAIL_FROM": "",
-        "NOTIFY_EMAIL_TO": ""
+        "ACCESS_AUD": ""
       }
     }
   }
