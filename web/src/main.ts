@@ -60,8 +60,8 @@ async function start() {
   let current: Repeater | null = null;
 
   // ---------- Map ----------
-  const START_ZOOM_BOOST = 1;
-  const map = L.map("map", { zoomControl: true, minZoom: 6, maxZoom: 17, worldCopyJump: true });
+  const START_ZOOM_BOOST = 1.5;
+  const map = L.map("map", { zoomControl: true, zoomSnap: 0.5, minZoom: 6, maxZoom: 17, worldCopyJump: true });
   map.attributionControl.setPrefix(false);
   L.tileLayer(config.tile_url, {
     maxZoom: 19,
