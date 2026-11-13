@@ -60,6 +60,7 @@ async function start() {
   let current: Repeater | null = null;
 
   // ---------- Map ----------
+  const START_ZOOM_BOOST = 1;
   const map = L.map("map", { zoomControl: true, minZoom: 6, maxZoom: 17, worldCopyJump: true });
   map.attributionControl.setPrefix(false);
   L.tileLayer(config.tile_url, {
@@ -158,11 +159,13 @@ async function start() {
       if (repeater.antenna_height_ft !== null) assumptions.push(`antenna at ${repeater.antenna_height_ft} ft`);
       $("overlay-meta").textContent =
         `${ov.notes ?? assumptions.join(", ") + "."} Last updated ${formatDate(ov.updated_at)}.`;
-      map.fitBounds(ov.bounds, { padding: [10, 10] });
+      // Start one level closer than the whole prediction, centred on the repeater.
+      const fitZoom = map.getBoundsZoom(ov.bounds, false, L.point(20, 20));
+      map.setView([repeater.lat, repeater.lon], Math.min(fitZoom + START_ZOOM_BOOST, map.getMaxZoom()));
     } else {
       $("overlay-status").textContent = "The predicted coverage for this repeater has not been published yet.";
       $("overlay-meta").textContent = "";
-      map.setView([repeater.lat, repeater.lon], 10);
+      map.setView([repeater.lat, repeater.lon], 11);
     }
     show("main");
     await drawHexes();

@@ -629,12 +629,17 @@ textarea,
   font-weight: 600;
 }
 
+/* Mute the base map so the prediction and report hexagons stand out. Only the
+   tile pane is filtered; overlays and hexagons keep their full colour. */
+.leaflet-tile-pane {
+  filter: grayscale(0.85) contrast(0.8) brightness(1.08);
+}
 :root[data-theme="dark"] .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+  filter: grayscale(0.85) invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.8);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+    filter: grayscale(0.85) invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.8);
   }
 }
 
