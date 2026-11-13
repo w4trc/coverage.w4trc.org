@@ -84,6 +84,13 @@ describe("report validation", () => {
     expect(ReportInput.parse(good).comment).toBeNull();
     expect(ReportInput.parse({ ...good, comment: "   " }).comment).toBeNull();
   });
+  it("normalizes an optional callsign", () => {
+    expect(ReportInput.parse(good).callsign).toBeNull();
+    expect(ReportInput.parse({ ...good, callsign: "  " }).callsign).toBeNull();
+    expect(ReportInput.parse({ ...good, callsign: " w4abc " }).callsign).toBe("W4ABC");
+    expect(ReportInput.parse({ ...good, callsign: "kj4xyz/m" }).callsign).toBe("KJ4XYZ/M");
+    expect(ReportInput.safeParse({ ...good, callsign: "not a call" }).success).toBe(false);
+  });
   it("rejects bad values", () => {
     expect(ReportInput.safeParse({ ...good, quality: 4 }).success).toBe(false);
     expect(ReportInput.safeParse({ ...good, quality: 1.5 }).success).toBe(false);

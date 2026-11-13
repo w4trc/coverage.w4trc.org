@@ -72,7 +72,7 @@ adminApi.get("/reports", async (c) => {
   const [list, counts] = await c.env.DB.batch([
     c.env.DB.prepare(
       `SELECT id, repeater_id, lat, lon, quality, radio_type, antenna_type, location_context, comment,
-              status, submitted_at, reviewed_at, reviewed_by, substr(ip_hash, 1, 10) AS sender
+              callsign, status, submitted_at, reviewed_at, reviewed_by, substr(ip_hash, 1, 10) AS sender
          FROM reports WHERE ${where.join(" AND ")} ORDER BY id DESC LIMIT ?`,
     ).bind(...args, limit),
     c.env.DB.prepare("SELECT status, COUNT(*) AS n FROM reports GROUP BY status"),

@@ -30,6 +30,7 @@ type Deps = {
 };
 
 const PREFS_KEY = "coverage.setup.v1";
+const CALLSIGN_KEY = "coverage.callsign.v1";
 const EARTH_RADIUS_MI = 3958.8;
 
 function miles(a: L.LatLng, lat: number, lon: number): number {
@@ -59,6 +60,8 @@ export function initReportFlow({ map, config, repeater, show }: Deps) {
   const submit = $<HTMLButtonElement>("report-submit");
   const errorBox = $("report-error");
   const comment = $<HTMLTextAreaElement>("report-comment");
+  const callsign = $<HTMLInputElement>("report-callsign");
+  callsign.value = storageGet(CALLSIGN_KEY) ?? "";
   const hint = $("map-hint");
   const tsBox = $("turnstile-box");
 
@@ -243,6 +246,8 @@ export function initReportFlow({ map, config, repeater, show }: Deps) {
       location_context: picked("location_context") ?? "outdoors",
     };
     storageSet(PREFS_KEY, JSON.stringify(setup));
+    const call = callsign.value.trim().toUpperCase();
+    storageSet(CALLSIGN_KEY, call);
 
     sending = true;
     errorBox.hidden = true;
@@ -255,6 +260,7 @@ export function initReportFlow({ map, config, repeater, show }: Deps) {
         quality: Number(quality),
         ...setup,
         comment: comment.value,
+        callsign: call,
         turnstile_token: token,
       });
       comment.value = "";

@@ -27,6 +27,7 @@ type AdminReport = {
   reviewed_at: string | null;
   reviewed_by: string | null;
   sender: string;
+  callsign: string | null;
 };
 
 const BAND_COLOR = ["#52525b", "#dc2626", "#eab308", "#16a34a"];
@@ -215,7 +216,7 @@ async function start() {
           { class: "small" },
           `${lookup(RADIO_LABELS, r.radio_type)}, ${lookup(ANTENNA_LABELS, r.antenna_type).toLowerCase()}, ${lookup(CONTEXT_LABELS, r.location_context).toLowerCase()}`,
         ),
-        h("div", { class: "small muted" }, locate, " · sender ", h("span", { class: "sender" }, r.sender), " · ", sameSender),
+        h("div", { class: "small muted" }, locate, " · sender ", r.callsign ? h("b", {}, r.callsign, " ") : null, h("span", { class: "sender" }, r.sender), " · ", sameSender),
         r.reviewed_by ? h("div", { class: "small muted" }, `${r.status} by ${r.reviewed_by}, ${formatDateTime(r.reviewed_at)}`) : null,
         commentView,
         actions,

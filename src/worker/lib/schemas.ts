@@ -11,6 +11,14 @@ const comment = z
   .refine((s) => s.length <= COMMENT_MAX, `Comment must be ${COMMENT_MAX} characters or fewer`)
   .transform((s) => (s === "" ? null : s));
 
+/** Optional amateur callsign: letters and digits with an optional /suffix, stored upper case. */
+const reporterCallsign = z
+  .string()
+  .max(40)
+  .transform((s) => cleanText(s).toUpperCase())
+  .refine((s) => s === "" || /^[A-Z0-9]{3,8}(\/[A-Z0-9]{1,4})?$/.test(s), "Callsign doesn't look right")
+  .transform((s) => (s === "" ? null : s));
+
 export const ReportInput = z.object({
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
@@ -19,6 +27,7 @@ export const ReportInput = z.object({
   antenna_type: z.enum(ANTENNA_TYPES),
   location_context: z.enum(LOCATION_CONTEXTS),
   comment: comment.nullish().transform((v) => v ?? null),
+  callsign: reporterCallsign.nullish().transform((v) => v ?? null),
   turnstile_token: z.string().min(1).max(4096),
 });
 

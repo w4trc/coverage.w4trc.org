@@ -198,8 +198,8 @@ publicApi.post("/repeaters/:id/reports", async (c) => {
   await c.env.DB.prepare(
     `INSERT INTO reports
        (id, repeater_id, lat, lon, h3_r8, h3_r7, h3_r6, quality, radio_type, antenna_type,
-        location_context, comment, status, submitted_at, ip_hash)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+        location_context, comment, callsign, status, submitted_at, ip_hash)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
   )
     .bind(
       id,
@@ -214,6 +214,7 @@ publicApi.post("/repeaters/:id/reports", async (c) => {
       input.antenna_type,
       input.location_context,
       input.comment,
+      input.callsign,
       now.toISOString(),
       ipHash,
     )
